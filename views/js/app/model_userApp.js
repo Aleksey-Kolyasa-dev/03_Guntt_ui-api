@@ -1,8 +1,8 @@
 var modelUserApp = {};
-if(window.localStorage['clhGunttAppModela']){
-    modelUserApp = JSON.parse(window.localStorage['clhGunttAppModela']);
+if(window.localStorage['clhGunttAppModel']){
+    modelUserApp = JSON.parse(window.localStorage['clhGunttAppModel']);
 } else {
-	  modelUserApp =
+	modelUserApp =
 	 {
 	 userMain :
 	 {
