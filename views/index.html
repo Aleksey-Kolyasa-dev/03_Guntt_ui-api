@@ -1,0 +1,2023 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" ng-app="clhGunttApp">
+<head>
+	<title>HTML5 CSS3</title>
+
+	<script> var timerStart = Date.now();</script>
+	<link href="css/libs/bootstrap.min.css" rel="stylesheet" />
+	<link href="css/libs/jquery-ui-1.9.2.custom.css" rel="stylesheet" />
+
+	<link href="css/01_guntt-api-header.css" rel="stylesheet" />
+	<link href="css/02_guntt-api-time-control-panel.css" rel="stylesheet" />
+	<link href="css/03_guntt-api-user-time-line.css" rel="stylesheet" />
+	<link href="css/04_guntt-api-ruler.css" rel="stylesheet" />
+	<link href="css/misc/checkboxes.css" rel="stylesheet" />
+
+	<link href="css/modal_menu/01_modal_menu_resources.css" rel="stylesheet" />
+	<link href="css/modal_menu/02_modal_menu_type-group-org.css" rel="stylesheet" />
+	<link href="css/modal_menu/03_modal_menu_single_ev.css" rel="stylesheet" />
+
+	<link href="css/99_style.css" rel="stylesheet" />
+	
+
+	<script src="js/app/model_userApp.js"></script>
+
+	
+	<script src="js/lib/jquery-2.2.3.min.js"></script>
+	<script src="js/lib/jquery-ui-1.9.2.custom.min.js"></script>
+	<script src="js/lib/angular.js"></script>
+	<script src="js/lib/bootstrap.js"></script>
+
+	<!-- Module -->
+	<script src="js/app/module_clhGunttApp.js"></script>
+	<!-- Controllers -->
+	<script src="js/app/controllers/controller_UserAndResources.js"></script> 
+	<script src="js/app/controllers/controller_TimeDateControl.js"></script>
+	<!-- Directives -->
+	<script src="js/app/directives/01_directive-datepicker.js"></script>
+	<script src="js/app/directives/02_directive-resizable.js"></script>
+	<script src="js/app/directives/03_directives-menu-effects-recourses.js"></script>
+	<script src="js/app/directives/04_directives-menu-effects-groups.js"></script>
+	<script src="js/app/directives/05_directives-menu-effects-orgs.js"></script>
+	<!-- Filters -->
+	
+	<script src="js/ruler.js"></script>
+
+</head>
+
+<body ng-controller="gunttUsersObjCtrl">
+	
+	<div class="container-general col-xs-12 col-sm-12 col-md-12 col-lg-12" >
+		<div class="container-main" id="containerMain">
+			
+			<!--HEADER SECTION START-->
+			<header class="nav-head ">
+				<nav class="guntt-nav-head-main ">		
+					<section class="logo">
+						<span>CloudletHub</span>
+					</section>
+					
+					<div class="nav-head-left-panel-mini text-center hidden-sm hidden-xs" >
+						<a ng-click=saveToDataBase()>
+							<img src="img/calendar.png" alt="calendar" width="30px" title="Calendar" />  
+						</a>
+						<a ng-click=loadFromDataBase()>
+							<img src="img/view.png" alt="view" width="30px" title="View"/>  
+						</a>
+					</div>
+
+					<section class="nav-head-md-panel col-md-4 col-lg-7">
+						<ul directive-blind-dropdown-show >
+							<li></li>
+							<li></li>
+							<li></li>
+						</ul>
+						<!--dropdown START -->
+						<section class="nav-head-md-panel-dropdown dropdown header-dropdown-blind" hidden >
+							<div>
+								<div style="" title="Show not assigned resources" >
+									<input 
+										id="checkbox" 
+										class="checkbox" type="checkbox"
+										value="true" checked="" 
+										ng-model="showUnassignegRoles" >
+									<label for="checkbox" class="text-nowrap">Show not assigned resources</label>
+								</div>
+								<div style="margin-top: 5px" title="Do not display me" >
+									<input 
+										id="checkboxHide" 
+										class="checkbox" type="checkbox"
+										value="" checked="" 
+										ng-model="user.isHidden" >
+									<label for="checkboxHide" class="text-nowrap">Do not display me</label>
+								</div>
+							</div>
+							
+							<div  title="Display Groups Filter" style="width: 200px" >
+								<div class="text-center text-uppercase bg-primary">Display Groups Filter</div>
+								
+								<div class="panel-body text-left">
+									<ol ng-repeat="group in userGroupCollection.userGroupList" style="list-style: none; padding-left: 0" >
+										<li >
+											<input 
+												id="grDisplay{{$index}}" 
+												class="checkbox" type="checkbox"
+												value="" checked="group.display" 
+												ng-model="group.display"
+												 >
+											<label for="grDisplay{{$index}}" class="text-nowrap" title="{{group.groupName}}" >{{group.groupName}}</label>
+										</li>
+									</ol>
+								</div>
+								
+								<div class="text-center">
+									<button class="btn btn-danger btn-xs" title="Apply" ng-click="updateDisplayGroups()">Apply</button>
+								</div>
+							</div>
+						</section><!--dropdown END -->
+					</section>
+
+					<section class="nav-head-org-main text-center">
+						<a id="org-head-btn" data-toggle="modal" 
+							data-target="#organizations"><span>Organization</span></a>
+						<br/>
+						<a 
+							title="{{userOrgCollection.userCurrentOrg.orgName}}" 
+							ng-click="dropDownOrgListMenuToggle = !dropDownOrgListMenuToggle" 
+							style="text-decoration: none; cursor: pointer;">
+							<span>{{userOrgCollection.userCurrentOrg.orgName}}</span>
+						</a>
+						<div class="user-orgs-list dropdown" ng-show="dropDownOrgListMenuToggle" ng-mouseleave="dropDownOrgListMenuToggle=false">
+							<ul>
+								<li ng-repeat="org in userOrgCollection.userOrgList">
+									<a 
+										title="{{org.orgName}}" 
+										style="text-decoration: none; cursor: pointer;"
+										 ng-click="dropDownOrgListMenuHide($index)">
+										<span>{{org.orgName}}</span>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</section>
+
+					<section class="nav-head-user-panel">
+						<div>
+							<a>
+								<img src="img/person.png" alt="user-img" width="46px">
+							</a>
+						</div>
+						<div class="user-name">
+							<span>{{user.userName}}</span>
+						</div>
+						<div class="head-settings">
+							<a >
+								<img src="img/account-menu.png" alt="acc-menu" width="30px" title="Account menu">
+							</a>
+							<a >
+								<img src="img/settings.png" alt="settings" width="25px" title="Settings">
+							</a>
+						</div>
+					</section>
+				</nav>
+			</header>
+			<!--HEADER SECTION END-->
+
+
+			<!--TIME AND CONTROL SECTION START-->
+			<section class="time-and-control-main " ng-controller="gunttDateTimeCtrl">
+				
+				<!--TIME AND CONTROL *LEFT* SECTION START-->
+				<nav class="nav-panel-control-main ">
+					<div class="nav-panel-large ">
+						<button 
+							class="resources"
+							title="Resourses" 
+							data-toggle="modal" 
+							data-target="#resource" 
+						>
+							Resources
+						</button>
+						
+						<button 
+							class="types"
+							title="Types" 
+							data-toggle="modal" 
+							data-target="#type" 
+						>
+							Types
+						</button>
+						
+						<button 
+							class="groups"
+							title="Groups" 
+							data-toggle="modal" 
+							data-target="#groups" 
+						>
+							Groups
+						</button>
+						
+						<button class="share" >Share</button>
+					</div>
+					
+					<div class="nav-panel-small hidden-md hidden-lg" hidden="">
+						<button 
+							class="resources" 
+							title="Resourses" 
+							data-toggle="modal" 
+							data-target="#resource"
+						>
+							R
+						</button>
+						
+						<button 
+							class="types" 
+							title="Types"
+							data-toggle="modal" 
+							data-target="#type"
+						>
+							T
+						</button>
+
+						<button 
+							class="groups"
+							title="Groups" 
+							data-toggle="modal" 
+							data-target="#groups" 
+						>
+							G
+						</button>
+						<button class="share" value="" title="Share">S</button>
+					</div>
+				</nav>
+				<!--TIME AND CONTROL *LEFT* SECTION END-->
+				
+				<!--TIME AND CONTROL *RIGHT* SECTION START-->
+				<nav class="nav-time-control-main" style="width:{{dateTableWidth}}px">
+					
+					<nav class="time-head-nav-pannel " style="width:{{dateTableWidth}}px" >
+						<section class="time-head-nav-pannel-left">
+							
+							<div style="margin-bottom: 2px">
+								<button class="btn btn-default active btn-xs" id="ruler-button" ng-click="rulerGo = !rulerGo">
+									ruler
+								</button>
+							</div>
+							
+							<div class="btn-group btn-group-xs" id="day-dropdown" role="group">
+								<button tupe="button" class="btn  btn-default active" ng-click="dayMinus()"><span id="back-small"></span></button>
+								
+								<div class="btn-group btn-default-xs btn-group-xs" role="group" style="margin-right: 0;" >
+									<button 
+										tupe="button" 
+										class="btn btn-default dropdown-toggle active"
+										data-toggle="dropdown"
+										aria-haspopup="true"
+										aria-expanded="false"
+										style="width: 70px;"
+									> {{day}}
+										<span class="caret"></span>
+									</button>
+									
+									<ul class="dropdown-menu">
+										<li><a ng-click="setday(day ='days')">day</a></li>
+										<li><a ng-click="setday(day ='week')">week</a></li>
+										<li><a ng-click="setday(day ='month')">month</a></li>
+									</ul>
+								</div>	
+								<button tupe="button" class="btn btn-default active" ng-click="dayPlus()" ><span id="fwd-small"></span></button>
+							</div>
+
+							<div style="margin-bottom: 2px">
+								<button class="btn btn-info active btn-xs" id="ruler-button" ng-click="goToDay()" ng-show="showToDay">
+									ToDay!
+								</button>
+							</div>
+
+							<div style="margin-bottom: 2px">
+								<button class="btn btn-default active btn-xs" ng-click="goToDateShow = !goToDateShow">
+									Go To Date
+								</button>
+							</div>
+							
+							<div style="margin-bottom: 2px" class="goToDateDiv input-group" ng-show="goToDateShow" >
+								<form name="GoToDateForm" novalidate ng-submit="goToDateTrigger()">
+									<input 
+										type="text"
+										id="goToDateInput" 
+										class="goToDateInput form-control input-group datepick"
+										placeholder="dd.mm.20yy" 
+										name="goToDateInput" 
+										ng-model="goToDateChoice"
+										directive-datepicker
+										ng-required="true" 
+										ng-pattern="SingleEventSatrtDatePattern"
+										>
+									<div class="input-group-btn" style="width: 100px;" >
+										<button class="btn btn-success btn-xs" type="submit" 
+										ng-click="goToDateTrigger()" ng-disabled="GoToDateForm.$invalid">Go!</button>
+									</div>
+								</form>
+							</div>
+
+						</section>
+
+						<section class="time-head-nav-pannel-center" >
+							<a>
+								<span>{{toDay | date: "MMMM"}}, {{toDay | date: "yyyy"}}</span> 
+							</a>
+						</section>
+					</nav>
+					
+					<section class="time-line-head" style="width:{{tTableHeader}}px">
+						
+						<table class="table-time" style="width:{{tTableHeader}}px">
+							<tr>
+								<td colspan="24" class="text-center ">{{toDay | date: "dd"}} {{toDay | date: "EEEE"}}
+								</td>
+							</tr>
+							<tr>
+								<td>01</td>
+								<td>02</td>
+								<td>03</td>
+								<td>04</td>
+								<td>05</td>
+								<td>06</td>
+								<td>07</td>
+								<td>08</td>
+								<td>09</td>
+								<td>10</td>
+								<td>11</td>
+								<td>12</td>
+								<td>13</td>
+								<td>14</td>
+								<td>15</td>
+								<td>16</td>
+								<td>17</td>
+								<td>18</td>
+								<td>19</td>
+								<td>20</td>
+								<td>21</td>
+								<td>22</td>
+								<td>23</td>
+								<td>24</td>
+							</tr>
+						</table>					
+					</section>
+				</nav>
+				<!--TIME AND CONTROL *RIGHT* SECTION END-->
+
+				<!--TIME RULER START-->
+				<section class="ruler-main text-center" ng-controller="gunttDateTimeCtrl" ng-show="rulerGo" directive-resizable>
+					<div class="ruler-nav" ng-if="false">
+						<div class="plus">
+							<a class="btn btn-success" style="text-decoration: none;">
+								<span>+</span>
+							</a>
+						</div>
+						<div class="minus">
+							<a  class="btn btn-danger" style="text-decoration: none;">
+								<span>-</span>
+							</a>
+						</div>
+					</div>
+					<div class="ruler-move">
+						<button> << move >> </button>
+					</div>
+				</section>
+				<!--TIME RULER END-->
+			</section>
+			<!--TIME AND CONTROL SECTION END-->
+							
+
+
+			<!--USER AND RESOURCES TIME LINE SECTION START-->
+			<div class="user-and-resources-main-tileLine-container" ng-controller="gunttDateTimeCtrl">
+
+				<!--USER MAIN TIME LINE SECTIONS START-->
+				<section class="time-line-main-user-main"  ng-show="isUserAssignedToDisplayedOrg()" ng-hide="user.isHidden">
+					
+					<!--USER MAIN TIME LINE *LEFT* SECTION START-->
+					<section 
+						class="user-time-line-left-main" 
+						ng-class="user.isCollapsed ? 'user-time-line-left-main-collapse-active' : 'none'"
+						style="width:{{panelWidth}}px" 
+						>
+						
+						<div class="user-info-panel-left">
+							<div class="collapse-section">
+								<a class='user-time-line-collapse' ng-click="collapseToggleUser()" style="cursor: pointer;" title="collapse">
+									<img 
+										src='img/{{user.isCollapsed ? "arrow-down.png" : "arrow-up.png"}}' 
+										alt="arrow-collapse" 
+										width="22px">
+								</a>
+							</div>
+							<div class="avatar-section text-center" ng-hide="user.isCollapsed" >
+								<div class="avatar-div">
+									<!-- <img src="img/person.png" alt="avatar" width="46px"> -->
+								</div>
+								<div>
+									<a data-toggle="modal" data-target="#type" style="text-decoration: none;" >
+										<span class="avatar-type" title="{{userTypeCollection.userCurrentType}}">{{userTypeCollection.userCurrentType}}</span>
+									</a>
+								</div>
+							</div>
+							<div class=" text-center" ng-class="user.isCollapsed ? 'name-section-collapse-active' : 'name-section'">
+								<div>
+									<span 
+										class="avatar-user-name" 
+										ng-class="user.isCollapsed ? 'avatar-user-name-collapse-active' : 'none'">
+										{{user.userName}}
+									</span>
+								</div>
+								<div style="margin-top: 0px;" ng-hide="user.isCollapsed">
+									<a data-toggle="modal" data-target="#organizations" style="text-decoration: none;" >
+										<span class="avatar-user-role" title="{{userOrgCollection.userCurrentOrg.orgRole}}">{{userOrgCollection.userCurrentOrg.orgRole}}</span>
+									</a>
+								</div>
+							</div>
+						</div>
+						<div 
+							class="user-info-panel-right text-center" 
+							ng-class="user.isCollapsed ? 'user-info-panel-right-collapse-active' : 'none'">
+							
+							<div class="info-groups-header" ng-hide="user.isCollapsed" >
+								<a data-toggle="modal" data-target="#groups" style="text-decoration: none;">
+									<span>Groups</span>
+								</a>
+							</div>
+							
+							<div class="info-user-groups"  >
+								<span ng-repeat-start="group in userGroupCollection.userGroupList"></span>
+								<div 
+									class="info-user-gr-list-1"
+									 ng-class="user.isCollapsed ? 'info-user-gr-list-collapse-active' : 'none'" 
+									 ng-if="group.isMember">
+									
+									<div class="gr-color" style="background-color:{{group.groupColor}}" title="{{group.groupName}}"></div>
+									<div class="gr-name" ng-hide="user.isCollapsed">
+										<span>{{group.groupName}}</span>
+									</div >
+								</div >
+								<span ng-repeat-end></span>
+								
+								
+							</div>
+						</div>
+					</section>
+					<!--USER MAIN TIME LINE *LEFT* SECTION END-->
+					
+					<!--USER MAIN TIME LINE *RIGHT* SECTION START-->
+					<section 
+						class="user-time-line-right-main" 
+						style="width:{{dateTableWidth}}px"
+						ng-class="user.isCollapsed ? 'user-time-line-right-main-collapse-active' : 'none'"
+						ng-mouseleave="eventsButtonsShowUser = false">
+						
+						<div ng-show="eventsButtonsShowUser" style="height: 15px;" >
+							<button class="btn-warning btn-xs single-btn" type="button" data-toggle="modal" 
+									data-target="#single-event-modal-open" style="position:absolute;" ng-click="EventTemplateVariant('SE')" >
+									single event
+							</button>
+							<button class="btn-primary btn-xs recurring-btn" type="button" data-toggle="modal" 
+									data-target="#single-event-modal-open" style="position:absolute;" ng-click="EventTemplateVariant('RE')">
+									recurring events
+							</button>
+							<button class="btn-success btn-xs booking-btn" type="button" data-toggle="modal" 
+									data-target="#single-event-modal-open" style="position:absolute;" ng-click="EventTemplateVariant('SBE')">
+									book me!
+							</button>
+						</div>
+						
+						<div 
+							class="time-line-block" 
+							ng-class="user.isCollapsed ? 'time-line-block-collapse-active' : 'none'"
+							ng-click="eventsButtonsShowUser=!eventsButtonsShowUser"
+							style="width:{{dateTableWidth}}px">
+						
+							<div class="time-line" style="width:{{dateTableWidth}}px"  >
+									<!-- SINGLE EVENTS RENDER-->
+								<button 
+									class="time-bar"
+									ng-class="(event.eventClass == 'Booking Event')? 'time-bar-book' : (event.eventType == 'Work time')? 'time-bar-work' : 'time-bar-rest'"
+									data-toggle="modal"
+									data-target="#event-info-modal"  
+									ng-repeat="event in userTimeCollection.singleEvents | filter : displayedDate"
+									ng-click="eventInfoPanel(event.eventClass, event.eventId)"	
+									style="
+									left:{{(event.timeStart )*(dateTableWidthDynamic/24) + 331}}px;
+									width:{{(event.duration*dateTableWidthDynamic/24)}}px;" 
+								>
+									<span>{{event.duration}} </span>
+								</button>
+									<!-- RECURRING EVENTS RENDER-->
+								<button 
+									class="time-bar"
+									ng-class="(event.eventType == 'Work time')? 'time-bar-work' : 'time-bar-rest'"
+									data-toggle="modal"
+									data-target="#event-info-modal"  
+									ng-repeat="event in userTimeCollection.recurringEvents | filter: displayedDateRange"
+									ng-click="eventInfoPanel(event.eventClass, event.eventId)"	
+									style="
+									left:{{(event.timeStart )*(dateTableWidthDynamic/24) + 331}}px;
+									width:{{(event.duration*dateTableWidthDynamic/24)}}px;" 
+								>
+									<span>{{event.duration}} </span>
+								</button>
+							</div><!-- time-line-end -->
+						
+						</div>
+					</section>
+					<!--USER MAIN TIME LINE *RIGHT* SECTION START-->								
+				</section>
+				<!--USER MAIN TIME LINE SECTIONS END-->
+
+				
+				<!-- RESOURSES TIME LINE SECTION START-->
+				<section 
+					class="time-line-main-user-resource" 
+					ng-repeat="resource in userResourceCollection | filter: {display : true}" 
+					ng-show="isResourceAssignedToDisplayedOrg(resource.resOwnerCurrentOrg.orgRole)"
+					ng-class="resIndexForInfo = $index" 
+					>
+					
+					<section 
+						class="user-time-line-left-main" 
+						ng-class="resource.isCollapsed ? 'user-time-line-left-main-collapse-active' : 'none'"
+						style="width:{{panelWidth}}px"
+						>
+						
+						<div class="user-info-panel-left">
+							<div class="collapse-section">
+								<a  class='user-time-line-collapse' style="cursor: pointer;" ng-click="collapseToggle($index)" title="collapse">
+									<img src='img/{{resource.isCollapsed ? "arrow-down.png" : "arrow-up.png"}} ' alt="arrow-collapse" width="22px">
+								</a>
+							</div>
+							<div class="avatar-section text-center" ng-hide="resource.isCollapsed">
+								<div class="avatar-div">
+									<!-- <img src="img/person.png" alt="avatar" width="46px"> -->
+								</div>
+								<div class="avatar-type-div">
+									<a data-toggle="modal" data-target="#type" style="text-decoration: none;" >
+										<span class="avatar-type" title="{{resource.resType}}">{{resource.resType}}</span>
+									</a>
+								</div>
+							</div>
+							<div class=" text-center" ng-class="resource.isCollapsed ? 'name-section-collapse-active' : 'name-section'" >
+								<div>
+									<a 
+										class="avatar-user-name" 
+										ng-class="resource.isCollapsed ? 'avatar-user-name-collapse-active' : 'none'"
+										title="{{resource.resName}}"
+										data-toggle="modal" 
+										data-target="#resource"
+
+									>
+										{{resource.resName}} 
+									</a>
+								</div>
+								<div style="margin-top: 0px;" ng-hide="resource.isCollapsed">
+									<a data-toggle="modal" data-target="#organizations" style="text-decoration: none;" >	
+										<span class="avatar-user-role" title="{{resource.resOwnerCurrentOrg.orgRole}}">
+											{{resource.resOwnerCurrentOrg.orgRole}}
+										</span >
+									</a>
+								</div>
+							</div>
+						</div>
+						<div class="user-info-panel-right text-center" ng-class="collapsedSatus ? 'user-info-panel-right-collapse-active' : 'none'">
+							<div class="info-groups-header" ng-hide="resource.isCollapsed" >
+								<a data-toggle="modal" data-target="#groups" style="text-decoration: none;">
+									<span>Groups</span>
+								</a>
+							</div>
+							<div class="info-user-groups" ng-repeat="resGroup in resource.resGroup" ng-if="resGroup.isMember" >
+								
+								<div class="info-user-gr-list-1" ng-class="resource.isCollapsed ? 'info-user-gr-list-collapse-active' : 'none'">
+									
+									<div class="gr-color-1" title="{{resGroup.groupName}}" style="background:{{resGroup.groupColor}};"></div>
+									
+									<div class="gr-name-1" title="{{resGroup.groupName}}" ng-hide="resource.isCollapsed" >
+										<span>{{resGroup.groupName}}</span>
+									</div>
+
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<section 
+						class="user-time-line-right-main" 
+						ng-class="resource.isCollapsed ? 'user-time-line-right-main-collapse-active' : 'none'" 
+						style="width:{{dateTableWidth}}px"
+						ng-mouseleave="eventsButtonsShows$index = false">
+						
+						<div ng-show="eventsButtonsShows$index" style="height: 15px;" >
+							<button class="btn-warning btn-xs single-btn" type="button" data-toggle="modal" 
+									data-target="#single-event-modal-open" style="position:absolute;" ng-click="EventTemplateVariant('SE', $index)" >
+									single event
+							</button>
+							<button class="btn-primary btn-xs recurring-btn" type="button" data-toggle="modal" 
+									data-target="#single-event-modal-open" style="position:absolute;" ng-click="EventTemplateVariant('RE', $index)">
+									recurring events
+							</button>
+							<button class="btn-success btn-xs booking-btn" type="button" data-toggle="modal" 
+									data-target="#single-event-modal-open" style="position:absolute;" ng-click="EventTemplateVariant('SBE', $index)">
+									book me!
+							</button>
+						</div>
+						
+						<div class="time-line-block" 
+							ng-class="resource.isCollapsed ? 'time-line-block-collapse-active' : 'none'"
+							ng-click="eventsButtonsShows$index=!eventsButtonsShows$index">
+
+							<div class="time-line" style="width:{{dateTableWidth}}px">
+								
+										<!-- SINGLE EVENTS RENDER-->
+									<button 
+										class="time-bar"
+										ng-class="(event.eventClass == 'Booking Event')? 'time-bar-book' : (event.eventType == 'Work time')? 'time-bar-work' : 'time-bar-rest'"
+										data-toggle="modal"
+										data-target="#event-info-modal"  
+										ng-repeat="event in resource.resTimeCollection.singleEvents | filter: displayedDate"
+										ng-click="eventInfoPanel(event.eventClass, event.eventId, resIndexForInfo)"	
+										style="
+											left:{{(event.timeStart )*(dateTableWidthDynamic/24) + 331}}px;
+											width:{{(event.duration*dateTableWidthDynamic/24)}}px;" 
+									>
+										<span></span>
+									</button>
+										<!-- RECURRING EVENTS RENDER-->
+									<button 
+										class="time-bar"
+										ng-class="(event.eventType == 'Work time')? 'time-bar-work' : 'time-bar-rest'"
+										data-toggle="modal"
+										data-target="#event-info-modal"  
+										ng-repeat="event in resource.resTimeCollection.recurringEvents | filter: displayedDateRange"
+										ng-click="eventInfoPanel(event.eventClass, event.eventId, resIndexForInfo)"	
+										style="
+										left:{{(event.timeStart )*(dateTableWidthDynamic/24) + 331}}px;
+										width:{{(event.duration*dateTableWidthDynamic/24)}}px;" 
+									>
+									<span>{{event.duration}} </span>
+								</button>
+
+								
+							</div>
+						</div>
+						
+					</section>
+				</section>
+				<!--RESOURSES TIME LINE SECTION END-->
+
+				<!-- EVENTS MODALS SECTION *START*-->
+				<section class="events-modals-main-section">				
+				
+					<!-- EVENTS MODAL *START*-->
+					<div class="modal fade" id="single-event-modal-open">
+						<div class="modal-dialog modal-lg">
+							
+								<div class="modal-body">
+									<!--time-modal- SINGLE EVENTS *START*-->
+									<section class="event-main-menu">
+										
+										<div class="event-modal-header">
+											<div><span>{{eventModalTitle}}</span></div>		
+											<div>
+												<a data-dismiss="modal" style="cursor: pointer;" ng-click="eventInputDataErase()">
+													<img class="close-btn" src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px"  title="close">
+												</a>
+											</div>		
+										</div>
+
+									
+										<div class="event-modal-body">
+											
+											<form name="singleEventForm" novalidate ng-submit="addNewUserSingleEvent()">
+													<!--Start Date Section-->
+												<div  class="event-single-modal-date-enter" ng-show="eventModalSingleStartDateSection" >
+													<span ng-show="singleEventForm.SingleEventSatrtDate.$error.required">Enter event Satrt Date or select "Today!"</span>
+													<span style="color: #FF9651" ng-show="singleEventForm.SingleEventSatrtDate.$error.pattern">date format: dd.mm.20yy</span>
+													<span 	style="color: #00B151"
+															ng-show="!singleEventForm.SingleEventSatrtDate.$error.required && 
+																  	 !singleEventForm.SingleEventSatrtDate.$error.pattern &&
+																  	 singleEventForm.SingleEventSatrtDate.$dirty">Date is correct!
+													</span>
+													<div class="date-block" ng-hide="todayChoice">
+														
+														<input 
+															type="text" 
+															class="event-single-input-date datepick"
+															directive-datepicker
+															placeholder="dd.mm.20yy" 
+															ng-model="eventStartDate"
+															name="SingleEventSatrtDate"
+															ng-required="startDateInputRequired"
+															ng-pattern="SingleEventSatrtDatePattern" 
+															>
+													</div>
+													
+													<div style="width: 50px; text-align: center;" ng-hide="todayChoice">
+														<span>or</span>
+													</div>
+													
+													<div class="today-select" style="width: 100px;" >
+														<input 
+															ng-click="todayChoiceTrigger(todayOptionChecked)"
+															type="checkbox"
+															id="single-user"
+															class="checkbox"
+															ng-model="todayOptionChecked">			
+														<label for="single-user" class="text-nowrap" style="">				
+															Today!
+														</label>
+													</div>	
+												</div>
+													<!--End Date Section-->
+												<div  class="event-single-modal-date-enter" ng-show="eventModalSingleEndDateSection" >
+													<span 	ng-show="singleEventForm.recurringEventEndDateName.$error.required">Enter event End Date</span>
+													<span 	style="color: #FF9651" ng-show="singleEventForm.recurringEventEndDateName.$error.pattern">date format: dd.mm.20yy</span>
+													<span 	style="color: #00B151"
+															ng-show="!singleEventForm.recurringEventEndDateName.$error.required && 
+																  	 !singleEventForm.recurringEventEndDateName.$error.pattern &&
+																  	 singleEventForm.recurringEventEndDateName.$dirty">Date is correct!
+													</span>
+													
+													<div class="date-block">
+														
+														<input 
+															type="text" 
+															class="event-single-input-date"
+															directive-datepicker
+															placeholder="dd.mm.20yy" 
+															ng-model="recurringEventEndDate"
+															name="recurringEventEndDateName"
+															ng-required="recurringEventEndDateRequired" 
+															ng-pattern="SingleEventSatrtDatePattern" 
+															>
+													</div>													
+												</div>
+													<!--Recuring Week Days Selection Section-->
+												<div  class="event-single-modal-date-enter" ng-show="eventModalWeekDaysSection" >
+													
+													
+													<div class="week-day-select" style="width: 100px;">
+														<input 
+															type="checkbox"
+															id="single-user-week"
+															class="checkbox"
+															ng-click="showWeekDaysSelectingPanel=!showWeekDaysSelectingPanel"
+															ng-model="weekDaysSelectionOptionStatus">			
+														<label for="single-user-week" class="text-nowrap" style="">				
+															Select days of week (if necessary)
+														</label>
+													</div>
+
+													<div class="week-day-choice" ng-show="showWeekDaysSelectingPanel">
+														<div ng-repeat="day in userTimeCollection.weekDays">
+															<input 
+																type="checkbox"
+																id="weekDays{{$index}}" 
+																class="checkbox"																	
+																ng-model="day.checked">			
+															<label for="weekDays{{$index}}" class="text-nowrap" style="">				
+																<span ng-style="$first ? {'color':'red' } : { 'color':';'}">{{day.day}}</span>
+															</label>
+
+														</div>
+													</div>	
+												</div>
+													<!--Type And Msg Section-->
+												<div  class="event-single-modal-date-enter" ng-show="eventModalSingleTypeAndMsgSection" >
+													<span 	style="color: #00B151"
+															ng-show="singleEventForm.eventType0.$dirty || 
+																   singleEventForm.eventType1.$dirty">Event type selected
+													</span>
+													<span style="color: #FF9651"
+														  ng-show="singleEventForm.eventType0.$pristine && 
+																   singleEventForm.eventType1.$pristine" >Select event type
+													</span>
+															
+													<div style="width: 100px;" >
+														<div ng-repeat="type in eventType">
+															<input 
+																type="radio"
+																name="eventType{{$index}}" 
+																id="single-user2{{$index}}" 
+																class="checkbox"
+																value="{{type}}"
+																ng-required="eventTypeRequired"
+																ng-checked="eventTypeCheckedSt" 
+																ng-model="$parent.eventTypeChecked"	>			
+															<label for="single-user2{{$index}}" class="text-nowrap" style="">				
+																{{type}}
+															</label>
+														</div>
+														
+														<div class="event-msg-block">
+															<span>Information (if any)</span>	
+															<textarea 
+															
+															rows="2"
+															cols="43" 
+															name="ss" 
+															class="event-msg"
+															ng-model="eventMsg" 
+															>	
+															</textarea>	
+														</div>										
+													</div>	
+												</div>
+													<!--Booking Msg Section-->
+												<div  class="event-single-modal-date-enter" ng-show="eventModalSingleBookingMsgSection" >
+													
+															
+													<div style="width: 100px;" >
+														
+														<div class="event-msg-block">
+															<span 	style="color: #FF9651"
+																	ng-show="singleEventForm.BookRequesterNameInput.$error.required ||
+																			 singleEventForm.BookRequesterContactInput.$error.required ||
+																			 singleEventForm.BookRequesterMsgInput.$error.required"
+															  >Filds marked with(*) are mandatory
+															</span>
+															
+															<span>*Your name</span>	
+															<input 
+															type="text" 
+															ng-required="bookingInfoInputsRequired"
+															name="BookRequesterNameInput" 
+															class="event-msg book-input"
+															ng-minlength="2"
+															ng-maxlength="20"
+															ng-model="BookRequesterName" 
+															>
+															<span>*Your e-mail or Tel.#</span>	
+															<input 
+															type="text" 
+															ng-required="bookingInfoInputsRequired"
+															ng-minlength="5"
+															ng-maxlength="25"
+															name="BookRequesterContactInput" 
+															class="event-msg book-input"
+															ng-model="bookRequesterContact" 
+															>
+														
+														</div>
+
+														<div class="event-msg-block">
+															<span>*Book information</span>	
+															<textarea 
+															rows="2"																
+															cols="43" 
+															name="BookRequesterMsgInput" 
+															class="event-msg book-info-input"
+															ng-minlength="5"
+															ng-maxlength="1000"
+															ng-required="bookingInfoInputsRequired"
+															ng-model="bookRequesterMsg" 
+															>	
+															</textarea>	
+														</div>										
+													</div>	
+												</div>
+													<!--Start-End Time Section-->
+												<div ng-show="eventModalSingleTimeStartEndSection">
+													<span class="time-panel-header">Start-End time</span>	
+													<div class="time-control-main" >
+														
+														<div class="start-main">
+															<span>From</span>
+
+															<div class="start">
+																<input type="text" 
+																		class="form-control start-hrs"
+																		ng-model="singleEventStartHr"
+																		ng-maxlength="2"
+																		ng-pattern="eventTimePattern" 
+																		 >
+																<span>hr</span>
+																<input type="text" ng-model="singleEventStartMin" ng-pattern="eventTimePattern"  ng-maxlength="2" class="form-control start-min" value="0" >
+																<span>min</span>
+															</div>
+
+														</div>		
+
+														<div class="end-main">
+															<span>To</span>
+
+															<div class="end">	
+																<input type="text" ng-model="singleEventEndHr" ng-pattern="eventTimePattern"  ng-maxlength="2" class="form-control end-hrs" >
+																<span>hr</span>
+																<input type="text" ng-model="singleEventEndMin" ng-pattern="eventTimePattern"  ng-maxlength="2" class="form-control end-min" >
+																<span>min</span>
+															</div>
+
+														</div>	
+														
+														<div class="add-event" >
+															<button type="submit" data-dismiss="modal" ng-click="addNewUserSingleEvent()"  ng-disabled="singleEventForm.$invalid" >
+																<img class="confirm-btn" src="img/modal-menu/add.png" title="add" width="30
+																px"  />
+															</button >
+														</div>
+														<div class="errors">
+															<span ng-show="startHour23more">**Start Time should be less 24hr</span>
+															<span ng-show="endHour24more">**End Time must be less 25hr</span>
+															<span ng-show="minutes">**Minutes range is 0-59 min</span>
+															<span ng-show="timeMore24hr">**Max day duration is 24hr 00min</span>
+															<span ng-show="tStartMore_tEnd">**Start Time should be less then End Time</span>
+														</div>
+													</div>
+												</div>
+													<!--Event Successfully Added Section-->
+												<div ng-show="newEventCreated">
+													
+													<div class="succsess-msg-div">
+														
+														<span class="succsess-msg">New event successfully created!</span>		
+
+														<div style="margin-top: 10px" >
+															<button class="btn btn-success" data-dismiss="modal" ng-click="eventInputDataErase()">
+																Close
+															</button >
+														</div>
+														
+													</div>
+												</div>
+											
+											</form>
+
+										</div><!-- body end -->
+									</section>
+									<!--time-modal- SINGLE EVENTS *END*-->
+								</div>						
+						</div>
+					</div>					
+					<!-- EVENTS MODAL *END*-->
+				
+
+					<!-- EVENT INFO MODAL *START*-->
+					<div class="modal fade" id="event-info-modal" tabindex="-1">
+						<div class="modal-dialog modal-lg">
+							
+								<div class="modal-body">
+									<!--time-modal- SINGLE EVENTS *START*-->
+									<section class="event-main-menu">
+										
+										<div class="event-modal-header">
+											<div><span>EVENT INFO</span></div>		
+											<div>
+												<a data-dismiss="modal" style="cursor: pointer;" ng-click="deleteEventSubMenu = false">
+													<img class="close-btn" src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px"  title="close">
+												</a>
+											</div>		
+										</div>
+
+
+									
+										<div class="event-modal-body">
+											
+											<div  class="event-info-modal"  >
+												<span ng-if="eventIdDisplay">Event id: <span >{{infoEventId}}</span></span>
+												<br>
+												<span>Event Class: 
+													<span ng-class="(infoEventClass == 'Single Event')? 'single-event-info' :
+																	(infoEventClass == 'Booking Event')? 'booking-event-info' : 'recurring-event-info'">
+															{{infoEventClass}}
+													</span>
+												</span>
+												<br>
+												<span>Event Date Start: <span >{{infoEventDateStart | date: "dd.MM.yyyy"}}</span></span>
+												<br>
+												<span ng-if="eventEndDate">Event Date End: <span >{{infoEventDateEnd - 1| date: "dd.MM.yyyy"}}</span></span>
+												<br>
+												<span ng-if="eventWeekDays">Week days selection: 
+													<span ng-repeat="day in infoEventWeekDays">{{userTimeCollection.weekDays[day].day}}, </span>
+												</span>
+												<br>
+												<span>Event Type: <span >{{infoEventType}}</span></span>
+												<br>
+												<span>Event requested by: <span >{{infoEventRequester}}</span></span>
+												<br>
+												<span ng-if="eventReqContact">Event requester contact: <span >{{infoEventRequesterContact}}</span></span>
+												<br>
+												<span>Event message: <span >{{infoEventRequesterMsg}}</span></span>
+												<br>
+												<span>Event start at: <span >{{infoEventHrStart}}:{{infoEventMinStart}}</span></span>
+												<br>
+												<span>Event end at: <span >{{infoEventHrEnd}}:{{infoEventMinEnd}}</span></span>
+												<br>
+
+												<div class="delete-event" >
+														<button ng-click="deleteEventSubMenu=!deleteEventSubMenu"><span>DELETE</span></button>
+												</div>
+												<div class="delete-event-confirm" ng-show="deleteEventSubMenu">
+														<div  class="text-center">
+															<button ng-click="deleteEvent(eventIndex)"><span>CONFIRM</span></button>
+															<button ng-click="deleteEventSubMenu=!deleteEventSubMenu"><span>CANCEL</span></button>
+														</div>
+												</div>
+
+											</div>
+										</div>
+									</section>
+									<!--time-modal- SINGLE EVENTS *END*-->
+								</div>
+
+							
+
+						</div>
+					</div>
+					<!-- EVENT INFO MODAL *END*-->			
+				
+				</section>			
+				<!-- EVENTS MODALS SECTION *END* -->
+			</div>			
+			<!--USER AND RESOURCES TIME LINE SECTION END-->
+
+
+
+
+			<!--MODAL MENU's SECTION START-->
+			<section class="modal-menu-main-section">
+				
+
+				<!--RESOURCE MODAL SECTION START-->
+				<section class="resource-modal-main">
+					<div id="resource" class="modal fade">
+						<div class="modal-dialog modal-lg">
+							<div class="modal-constent">
+
+								
+								
+								<div class="modal-body resource-modal-block">
+									
+									<!--RESOURCE MODAL MENU MAIN SECTION START-->
+									<section class="resource-main-menu">	
+										<div class="res-modal-header">
+											<div><span>RESOURCES</span></div>
+											<div>
+												<a 	data-dismiss="modal" style="cursor: pointer;" 
+													directive-slide-hide 
+													directive-blind-close
+													>
+													<img class="close-btn" src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px" ng-click="resourceEditMenuClose()" title="close">
+												</a>
+											</div>
+										</div>
+
+										<div class="res-modal-body">
+											
+
+											<!-- res-modal-unit-block-MAIN USER START -->
+											<div class="res-modal-unit-block">
+												
+												<div class="res-modal-unit-block-top">
+													<div class="res-modal-unit-name">
+														<span style="font-weight: bold;">{{user.userName}}</span>
+													</div>
+													
+													<div class="res-modal-unit-edit" ng-show="false">
+														<button title="edit">edit</button>
+													</div>
+													
+													<!--<div class="res-modal-unit-del" hidden="hidden">
+														<button>X</button>
+													</div>-->
+												</div>
+												
+												<!--<div class="res-modal-unit-block-bottom text-center" hidden>
+													<h4>Are you sure?</h4>
+													
+													<div class="del-confirm-buttons">
+														<div class="del-confirm-cancel">
+															<a>
+																<img src="img/modal-menu/cancel.png" alt="cancel" width="22px">
+															</a>
+														</div>
+														
+														<div class="del-confirm-ok">
+															<a>
+																<img src="img/modal-menu/ok.png" alt="ok" width="22px">
+															</a>
+														</div>
+													</div>
+												</div>-->
+											</div>
+											<!-- res-modal-unit-block-MAIN USER END -->
+
+											
+											<!-- res-modal-unit-block-RESOURCES START -->
+											<div class="res-modal-unit-block" ng-repeat="resource in userResourceCollection">
+												<div class="res-modal-unit-block-top">
+													<div class="res-modal-unit-name">
+														<span style="font-weight: bold;">{{resource.resName}}</span>
+													</div>
+													
+													<div class="res-modal-unit-edit">
+														<button directive-slide-show ng-click="resourceEditMenuOpen($index, resource.resName)" ng-hide="resourceEditMenuOpenStatus" title="edit">edit</button><!-- B -->
+													</div>
+													
+													<div class="res-modal-unit-del">
+														<a  
+															style="cursor: pointer;" 
+															ng-click="resRemovePannelShow=!resRemovePannelShow" 
+															title="delete"
+															ng-hide="resourceEditMenuOpenStatus">
+
+															<img class="close-btn" src="img/modal-menu/delete.png" alt="deletePanelShow" width="24px">
+														</a>
+													</div>
+												</div>
+												
+												<div class="res-modal-unit-block-bottom text-center" ng-show="resRemovePannelShow">
+													<h4>Remove this resource completely?</h4>
+													
+													<div class="del-confirm-buttons">
+														<div class="del-confirm-cancel">
+															<a ng-click="resRemovePannelShow=false" title="cancel">
+																<img class="close-btn" src="img/modal-menu/cancel-t.png" alt="cancel" width="24px" height="24px">
+															</a>
+														</div>
+														
+														<div class="del-confirm-ok">
+															<a ng-click="removeResource($index)">
+																<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="24px" title="delete">
+															</a>
+														</div>
+													</div>
+												</div>	
+											</div>
+											<!-- res-modal-unit-block-RESOURCES END -->
+										</div><!-- res modal body END -->
+										
+										<div class="res-modal-footer">
+											<div class="text-center" ng-hide="resourceEditMenuOpenStatus">
+												<span>add new resource</span>
+												<br>
+												<input 
+													class="add-res-input" 
+													type="text" 
+													name="addRes" 
+													value="" 
+													ng-model="newResourseName"
+													ng-minlength="2"
+													ng-maxlength="25"
+													placeholder="" 
+													/>
+											</div>
+											<div class="add-res-confirm" ng-hide="resourceEditMenuOpenStatus" >
+												<a  ng-click="addNewResource(newResourseName)" 
+													 
+													style="cursor: pointer;">
+													<img class="confirm-btn" src="img/modal-menu/add.png" title="add" width="34
+													px"  />
+												</a>
+											</div>
+										</div>
+									</section>
+									<!--RESOURCE MODAL MENU MAIN SECTION END-->
+									
+
+									<!--RESOURCE MODAL MENU EDIT SECTION START--> 								<!--!-->
+									<section class="resource-main-menu-edit slide-menu" hidden="hidden" >
+										<!--header START-->
+										<header class="res-modal-edit-header" >
+											<div>
+												<span>RESOURCE: 
+													<span style="font-weight: bold;">{{userResourceCollection[currentResourceEditMenuOpen.resIndex].resName}} </span>
+													>Edit
+												</span>
+											</div>
+											<div>
+												<a 	style="cursor: pointer;" 
+													ng-click="resourceEditMenuClose()" 
+													title="close edit menu" 
+													directive-slide-hide
+													directive-blind-close>
+													<img class="close-btn"  src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px">
+												</a>
+											</div>
+										</header>
+										<!--header END-->
+										
+										<!--body START-->
+										<div class="res-modal-edit-body">
+											<div class="res-modal-edit-body-header">
+												<div>
+													<div class="res-modal-edit-body-header-name">
+														<span>{{userResourceCollection[currentResourceEditMenuOpen.resIndex].resName}}</span>
+													</div>
+													<div class="res-modal-edit-body-header-rename-btn">
+														<button 
+															class="modal-menu-btn" 
+															ng-click="renameBtnTrigger=!renameBtnTrigger" 
+															title="rename"
+															directive-blind-show
+															>
+																rename</button>
+													</div>
+												</div>
+												<hr>
+																															<!--!-->
+												<section  	class="res-modal-edit-body-header-remame-form blind-show"
+														hidden="hidden" 
+														
+														>
+													
+														<span for="resRemaneInput">Enter new resourse name</span>
+														<input 
+															type="text" 
+															class="res-remane-input"
+															id="resRemaneInput" 
+															placeholder="{{userResourceCollection[currentResourceEditMenuOpen.resIndex].resName}}" 
+															ng-model="newResName"
+															ng-minlength="2"
+															ng-maxlength="25"
+
+														>
+
+														<a ng-click="applyResEditNewName()" style="cursor: pointer;" title="apply">
+															<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+														</a>
+														
+														<div class="res-modal-edit-body-header-back">
+															<a directive-blind-show> back </a>
+														</div>
+												</section>
+											</div><!--header Edit end-->
+
+											<!-- res-modal-EDIT-TYPE-block START -->
+											<div class=" res-modal-edit-type-block" >
+												
+												<div class="res-modal-edit-type-block-top">
+													<div class="res-modal-edit-block-top-name">
+														<span>Type: 
+															<span class="res-edit-selected-type-name" title="{{userResourceCollection[currentResourceEditMenuOpen.resIndex].resType}}">
+																{{userResourceCollection[currentResourceEditMenuOpen.resIndex].resType}}
+															</span>
+														</span>
+													</div>
+													
+													<div class="res-modal-unit-edit" style="position: relative;top: -7px;">
+														<button directive-blind-types-show  title="edit">edit</button>
+													</div>
+												</div>
+																														<!--!-->
+												<section class="res-modal-edit-type-block-bottom blind-show-types" hidden="hidden">
+													
+													
+													<div class="res-edit-category">
+														
+														<div class="res-edit-category-unit">
+															<ul style="list-style: none;">
+															  	<li ng-repeat="type in userTypeCollection.userTypesList">
+															  		
+																		<input 
+																			type="radio"
+																			class="checkbox-r" 
+																			id="radio-type{{$index}}" 
+																			ng-model="$parent.resEditSelectedType" 
+																			ng-checked="userResourceCollection[currentResourceEditMenuOpen.resIndex].resType == type? true : false" 
+																			name="types-radio-list"
+																			value="{{type}}"
+																			style="cursor: pointer;" 
+																			
+																		> 
+																	<label title="{{type}}"  for="radio-type{{$index}}" class="radio category-radio-label" style="cursor: pointer;">{{type}}</label>
+															  	</li>
+															 </ul>  
+														</div>
+														<div class="type-select-apply">
+															<a ng-click="applyResEditSelectedType(resEditSelectedType)" style="cursor: pointer;" title="apply" directive-blind-types-show>
+																<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+															</a>
+														</div>
+													</div>
+												</section>	
+											</div>
+											<!-- res-modal-EDIT-TYPE-block END -->
+
+											<!-- res-modal-EDIT-GROUP-block START -->
+											<div class=" res-modal-edit-group-block" >
+												
+												<div class="res-modal-edit-group-block-top">
+													<div class="res-modal-edit-block-top-name">
+														<span>Group:</span> 
+														
+													</div>
+													
+													<div class="res-modal-unit-edit" style="position: relative;top: -1px;">
+														<button directive-blind-groups-show title="edit">edit</button>
+													</div>									<!--!-->
+													
+													<div>
+														<ul class="res-edit-selected-group-name" 
+															ng-repeat="group in userResourceCollection[currentResourceEditMenuOpen.resIndex].resGroup"
+															ng-if="group.isMember">
+															<li class="grp-name-color" style="color:{{group.groupColor}};">
+																{{group.groupName}}
+															</li>
+														</ul >
+													</div>
+												</div>
+																														<!--!-->
+												<section class="res-modal-edit-group-block-bottom blind-show-groups" hidden="hidden">
+													
+													<div class="res-edit-category">
+														<div class="res-edit-category-unit" style="margin-top: 10px">
+															<ul style="list-style: none;">
+															  	<li ng-repeat="group in userResourceCollection[currentResourceEditMenuOpen.resIndex].resGroup">
+																	<input 
+																		type="checkbox"
+																		id="checkbox{{$index}}" 
+																		class="checkbox" 
+																		ng-model="group.isMember"
+																	>
+																	<label for="checkbox{{$index}}" class="text-nowrap grp-name-color" style="color: {{group.groupColor}}">
+																		{{group.groupName}}
+																	</label>
+															  	</li>
+															 </ul>  
+														</div>
+														<div class="type-select-apply">
+															<a directive-blind-groups-show style="cursor: pointer;" title="apply" ng-click="applyResEditSelectedGroup()">
+																<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+															</a>
+														</div>
+													</div>
+												</section>	
+											</div>
+											<!-- res-modal-EDIT-GROUP-block END -->
+
+
+											<!-- res-modal-EDIT-ORGS-block END -->
+											<div class="res-modal-edit-orgs-block" >
+												
+												<div class="res-modal-edit-orgs-block-top">
+													<div class="res-modal-edit-block-top-name">
+														<span>Organization:</span> 
+														
+													</div>
+													
+													<div class="res-modal-unit-edit" style="position: relative;top: -1px;">
+														<button directive-blind-orgs-show title="edit">edit</button>
+													</div>									<!--!-->
+													
+													<div>
+														<ul class="res-edit-selected-orgs-name" 
+															ng-repeat="org in userResourceCollection[currentResourceEditMenuOpen.resIndex].resOrg"
+															ng-if=" org.orgRole !='not assigned' ">
+															<li style="color: #7386A7"> {{org.orgName}}</li>
+														</ul >
+													</div>
+												</div>
+																														<!--!-->
+												<section class="res-modal-edit-orgs-block-bottom blind-show-orgs" hidden="hidden">
+													
+													<div class="res-edit-category">
+														<div class="res-edit-category-unit" style="margin-top: 10px">
+															<ul style="list-style: none; padding-left: 0">
+															  	<li ng-repeat="org in userResourceCollection[currentResourceEditMenuOpen.resIndex].resOrg">
+																	<input 
+																		type="checkbox"
+																		id="checkbox2{{$index}}" 
+																		class="checkbox" 
+																		ng-checked="resOrgMembershipCheck($index)"
+																		ng-model="org.isMember"
+																		
+																	>
+																	<label for="checkbox2{{$index}}" class="text-nowrap" style="color: #7386A7">
+																		{{org.orgName}}, <span title="{{org.orgRole}}">{{org.orgRole}}</span>
+																	</label>
+															  	</li>
+															 </ul>  
+														</div>
+														<div class="type-select-apply">
+															<a ng-click="resOrgMembershipSetup()" directive-blind-orgs-show style="cursor: pointer;" title="apply">
+																<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+															</a>
+														</div>
+													</div>
+												</section>	
+											</div>	
+											<!-- res-modal-EDIT-ORGS-block END -->
+										
+										</div><!-- res modal edit body END -->
+																						
+										</div>
+										<!--body END-->
+																				
+									</section>
+									<!--RESOURCE MODAL MENU EDIT SECTION END-->
+								
+								</div>
+
+							</div>
+						</div>
+					</div>				
+				</section>
+				<!--RESOURCE MODAL SECTION END-->
+
+
+
+				<!--TYPE MODAL SECTION START-->
+				<section class="type-modal-main">
+					<div id="type" class="modal fade">
+						<div class="modal-dialog modal-lg">
+							<div class="modal-constent">
+
+								
+								<div class="modal-body resource-modal-block">
+									
+									<!--TYPE MODAL MENU MAIN SECTION START-->
+									<section class="resource-main-menu">	
+										<div class="res-modal-header">
+											<div><span style="color: #C9CFDD">TYPES</span></div>
+											<div>
+												<a data-dismiss="modal" style="cursor: pointer;">
+													<img class="close-btn" src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px" title="close">
+												</a>
+											</div>
+										</div>
+
+										<div class="res-modal-body">
+											
+											<!-- res-modal-unit-block-TYPE START -->
+											<div class="res-modal-unit-block" ng-repeat="type in userTypeCollection.userTypesList">
+												<div class="res-modal-unit-block-top">
+													<div class="res-modal-type-name">
+														<span title="{{type}}" style="font-weight: bold;">{{type}}</span>
+													</div>
+													
+													<div class="res-modal-unit-edit" ng-hide="true">
+														<button ng-click="resourceEditMenuOpen($index, resource.resName)" title="edit">edit</button>
+													</div>
+													
+													<div class="res-modal-unit-del" ng-hide="$first">
+														<a style="cursor: pointer;" ng-click="typeRemovePannelShow=!typeRemovePannelShow">
+															<img class="close-btn" src="img/modal-menu/delete.png" alt="deletePanelShow" width="24px">
+														</a>
+													</div>
+												</div>
+												
+												<div class="res-modal-unit-block-bottom text-center" ng-show="typeRemovePannelShow">
+													<h4>Remove this type completely?</h4>
+													
+													<div class="del-confirm-buttons">
+														<div class="del-confirm-cancel">
+															<a ng-click="typeRemovePannelShow=false" title="cancel">
+																<img class="close-btn" src="img/modal-menu/cancel-t.png" alt="cancel" width="24px" height="24px">
+															</a>
+														</div>
+														
+														<div class="del-confirm-ok">
+															<a ng-click="removeType($index)" title="confirm">
+																<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="24px">
+															</a>
+														</div>
+													</div>
+												</div>	
+											</div>
+											<!-- type-modal-unit-block-RESOURCES END -->
+										</div><!-- type modal body END -->
+										
+										<div class="res-modal-footer"><!-- type modal footer start -->
+											<div class="text-center">
+												<span>add new type</span>
+												<br>
+												<input 
+													class="add-res-input" 
+													type="text" 
+													name="addRes" 
+													value="" 
+													ng-model="newTypeName"
+													ng-minlength="2"
+													ng-maxlength="10"
+													placeholder="" 
+													/>
+											</div>
+
+											<div class="add-res-confirm" >
+												<a ng-click="addNewType(newTypeName)" style="cursor: pointer;" title="add">
+													<img class="confirm-btn" src="img/modal-menu/add.png"  width="34
+													px"  />
+												</a>
+											</div>
+
+										</div>
+									</section>
+									<!--TYPE MODAL MENU MAIN SECTION END-->
+
+								</div><!--type-modal-block end-->
+							
+							</div>
+						</div>
+					</div>
+				</section>
+				<!--TYPE MODAL SECTION END-->
+
+
+				
+				<!--GROUPS MODAL SECTION START-->
+				<section class="resource-modal-main">
+					<div id="groups" class="modal fade">
+						<div class="modal-dialog modal-lg">
+							<div class="modal-constent">
+
+								<div class="modal-body resource-modal-block">
+									
+									<!--GROUPS MODAL MENU MAIN SECTION START-->
+									<section class="resource-main-menu">	
+										<div class="res-modal-header">
+											<div><span style="color: #C9CFDD">GROUPS</span></div>
+											<div>
+												<a 
+													data-dismiss="modal" 
+													style="cursor: pointer;" 
+													title="close"
+													ng-click="groupEditMenuClose()"
+													directive-slide-hide-gr
+													directive-blind-close-gr >
+													<img class="close-btn" src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px" >
+												</a>
+											</div>
+										</div>
+
+										<div class="res-modal-body">
+											
+											<!-- res-modal-unit-block-GROUPS START -->
+											<div class="res-modal-unit-block" ng-repeat="group in userGroupCollection.userGroupList">
+												<div class="res-modal-unit-block-top">
+													<div class="res-modal-unit-name">
+														<span class="grp-name-color" style="color: {{group.groupColor}}; font-weight: bold;">{{group.groupName}}</span>
+													</div>
+													
+													<div class="res-modal-unit-edit">
+														<button ng-click="groupEditMenuOpen($index)" ng-hide="groupEditMenuOpenStatus" directive-slide-show-gr>edit</button>
+													</div>
+													
+													<div class="res-modal-unit-del" ng-hide="groupEditMenuOpenStatus">
+														<a style="cursor: pointer;" ng-click="groupRemovePannelShow=!groupRemovePannelShow">
+															<img class="close-btn" src="img/modal-menu/delete.png" alt="deletePanelShow" width="24px">
+														</a>
+													</div>
+												</div>
+												
+												<div class="res-modal-unit-block-bottom text-center" ng-show="groupRemovePannelShow">
+													<h4>Remove this group completely?</h4>
+													
+													<div class="del-confirm-buttons">
+														<div class="del-confirm-cancel">
+															<a ng-click="groupRemovePannelShow=false" title="cancel">
+																<img class="close-btn" src="img/modal-menu/cancel-t.png" alt="cancel" width="24px" height="24px">
+															</a>
+														</div>
+														
+														<div class="del-confirm-ok">
+															<a ng-click="removeGroup($index)" title="confirm">
+																<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="24px">
+															</a>
+														</div>
+													</div>
+												</div>	
+											</div>
+											<!-- group-modal-unit-block-GROUP END -->
+										</div><!-- group modal body END -->
+										
+										<div class="res-modal-footer">
+											<div class="text-center" ng-hide="groupEditMenuOpenStatus">
+												<span>add new group</span>
+												<br>
+												<input 
+													class="add-res-input" 
+													type="text" 
+													name="addRes" 
+													value="" 
+													ng-model="newGroupName"
+													ng-minlength="3"
+													ng-maxlength="17"
+													placeholder="" 
+													/>
+											</div>
+											<div class="add-res-confirm" ng-hide="groupEditMenuOpenStatus" >
+												<a ng-click="addNewGroup(newGroupName)" style="cursor: pointer;">
+													<img class="confirm-btn" src="img/modal-menu/add.png" title="add" width="34
+													px"  />
+												</a>
+											</div>
+										</div>
+									</section>
+									<!--GROUPS MODAL MENU MAIN SECTION END-->
+									
+
+									<!--GROUPS MODAL MENU EDIT SECTION START--> 								<!--!-->
+									<section class="resource-main-menu-edit slide-menu-gr" hidden="hidden">
+										<!--header START-->
+										<header class="res-modal-edit-header" >
+											<div>
+												<span  style="color: #C9CFDD">GROUP: 
+													<span style="font-weight: bold;">{{userResourceCollection[currentResourceEditMenuOpen.resIndex].resName}} </span>
+													>Edit
+												</span>
+											</div>
+											<div>
+												<a 
+													style="cursor: pointer;" 
+													directive-slide-hide-gr
+													directive-blind-close-gr 
+													ng-click="groupEditMenuClose()" >
+													<img class="close-btn" src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px">
+												</a>
+											</div>
+										</header>
+										<!--header END-->
+										
+										<!--body START-->
+										<div class="res-modal-edit-body">
+											<div class="res-modal-edit-body-header">
+												<div>
+													<div class="res-modal-edit-body-header-name grp-name-color">
+														<span style="color:{{userGroupCollection.userGroupList[currentGroupEditMenuOpen.grIndex].groupColor}} ">
+															{{userGroupCollection.userGroupList[currentGroupEditMenuOpen.grIndex].groupName}}
+														</span>
+													</div>
+													<div class="res-modal-edit-body-header-rename-btn">
+														<button class="modal-menu-btn"  directive-blind-show-gr>rename</button>
+													</div>
+												</div>
+												<hr>
+																															<!--!-->
+												<section  class="res-modal-edit-body-header-remame-form blind-show-gr" hidden="hidden" >
+													
+														<span for="groupRemaneInput">Enter new group name</span>
+														<input 
+															type="text" 
+															class="res-remane-input"
+															id="groupRemaneInput" 
+															placeholder="{{userGroupCollection.userGroupList[currentGroupEditMenuOpen.grIndex].groupName}}" 
+															ng-model="newGroupRename"
+															ng-minlength="2"
+															ng-maxlength="17"
+
+														>
+
+														<a ng-click="applyGroupEditNewName()" style="cursor: pointer;">
+															<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+														</a>
+														
+														<div class="res-modal-edit-body-header-back">
+															<a directive-blind-show-gr> back </a>
+														</div>
+												</section>
+											</div><!--header Edit end-->
+
+											<!-- group-modal-EDIT-COLOR-block START -->
+											<div class=" res-modal-edit-type-block" >
+												
+												<div class="res-modal-edit-type-block-top">
+													<div class="res-modal-edit-block-top-name">
+														<span>Color : 
+															<span class="res-edit-selected-type-name-color" title="" style="color: {{userGroupCollection.userGroupList[currentGroupEditMenuOpen.grIndex].groupColor}}">
+																{{userGroupCollection.userGroupList[currentGroupEditMenuOpen.grIndex].groupName}}
+															</span>
+														</span>
+													</div>
+													
+													<div class="res-modal-unit-edit" style="position: relative;top: -7px;">
+														<button directive-blind-color-show>edit</button>
+													</div>
+												</div>
+																														<!--!-->
+												<section class="res-modal-edit-type-block-bottom blind-show-color" hidden="hidden">
+													
+													
+													<div class="res-edit-category">
+														
+														<div class="res-edit-category-unit-color">
+															  	<div ng-repeat="color in userGroupCollection.userGroupColorsCollection">
+															  		
+																		<input
+																			id="radioColor{{$index}}" 
+																			type="radio"
+																			class="checkbox-r radio-color-edit" 
+																			ng-model="$parent.selectedColor" 
+																			ng-checked="userGroupCollection.userGroupList[currentGroupEditMenuOpen.grIndex].groupColor == color? true : false" 
+																			name="types-radio-list"
+																			value="{{color}}"
+																			style="cursor: pointer;" 
+																		>
+																		<label for="radioColor{{$index}}" class="radio category-radio-label color-label" style="cursor: pointer; background: {{color}}; color:{{color}} ">
+																		.
+																	</label>
+															 </div>  
+														</div>
+														<div class="type-select-apply type-select-apply-color">
+															<a ng-click="applyGroupEditSelectedColor(selectedColor)" directive-blind-color-show style="cursor: pointer;">
+																<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+															</a>
+														</div>
+													</div>
+												</section>	
+											</div>
+											<!-- group-modal-EDIT-COLOR-block END -->
+
+											
+										
+										</div><!-- res modal edit body END -->
+																						
+										</div>
+										<!--body END-->
+										
+									</section>
+									<!--GROUPS MODAL MENU EDIT SECTION END-->
+								
+								</div>
+
+							</div>
+						</div>
+					</div>				
+				</section>
+				<!--GROUPS MODAL SECTION END-->
+
+
+
+				<!--ORGANIZATIONS MODAL SECTION START-->
+				<section class="resource-modal-main">
+					<div id="organizations" class="modal fade">
+						<div class="modal-dialog modal-lg">
+							<div class="modal-contents">
+								
+								<div class="modal-body resource-modal-block">
+									
+									<!--ORGANIZATIONS MODAL MENU MAIN SECTION START-->
+									<section class="resource-main-menu">	
+										<div class="res-modal-header">
+											<div><span style="color: #C9CFDD">ORGANIZATIONS</span></div>
+											<div>
+												<a 	data-dismiss="modal" 
+													style="cursor: pointer;"
+													directive-slide-hide-org
+													directive-blind-close-org>
+													<img class="close-btn" src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px" ng-click="organizationEditMenuClose()">
+												</a>
+											</div>
+										</div>
+
+										<div class="res-modal-body">
+											
+											<!-- res-modal-unit-block-ORGANIZATIONS START -->
+											<div class="res-modal-unit-block" ng-repeat="org in userOrgCollection.userOrgList">
+												<div class="res-modal-unit-block-top">
+													<div class="res-modal-unit-name">
+														<span style="font-weight: bold; ">{{org.orgName}}</span>
+													</div>
+													
+													<div class="res-modal-unit-edit">
+														<button ng-click="organizationEditMenuOpen($index)" 
+																ng-hide="OrganizationEditMenuOpenStatus"
+																directive-slide-show-org>edit</button>
+													</div>
+													
+													<div class="res-modal-unit-del" ng-hide="OrganizationEditMenuOpenStatus">
+														<a style="cursor: pointer;" ng-click="orgRemovePannelShow=!orgRemovePannelShow">
+															<img class="close-btn" src="img/modal-menu/delete.png" alt="deletePanelShow" width="24px">
+														</a>
+													</div>
+												</div>
+												
+												<div class="res-modal-unit-block-bottom text-center" ng-show="orgRemovePannelShow">
+													<h4>Remove this organization completely?</h4>
+													
+													<div class="del-confirm-buttons">
+														<div class="del-confirm-cancel">
+															<a ng-click="orgRemovePannelShow=false">
+																<img class="close-btn" src="img/modal-menu/cancel-t.png" alt="cancel" width="24px" height="24px">
+															</a>
+														</div>
+														
+														<div class="del-confirm-ok">
+															<a ng-click="removeOrganization($index)">
+																<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="24px">
+															</a>
+														</div>
+													</div>
+												</div>	
+											</div>
+											<!-- organizations-modal-unit-block-GROUP END -->
+										</div><!-- organization modal body END -->
+										
+										<div class="res-modal-footer">
+											<div class="text-center" ng-hide="OrganizationEditMenuOpenStatus">
+												<span>add new organization</span>
+												<br>
+												<input 
+													class="add-res-input" 
+													type="text" 
+													name="addRes" 
+													value="" 
+													ng-model="newOrgName"
+													ng-minlength="3"
+													ng-maxlength="17"
+													placeholder="" 
+													/>
+											</div>
+											<div class="add-res-confirm" ng-hide="OrganizationEditMenuOpenStatus" >
+												<a ng-click="addNewOrganization(newOrgName)" style="cursor: pointer;">
+													<img class="confirm-btn" src="img/modal-menu/add.png" title="addRes" width="34
+													px"  />
+												</a>
+											</div>
+										</div>
+									</section>
+									<!--ORGANIZATIONS MODAL MENU MAIN SECTION END-->
+									
+
+									<!--ORGANIZATIONS MODAL MENU EDIT SECTION START--> 								<!--!-->
+									<section class="resource-main-menu-edit slide-menu-org" hidden="hidden">
+										<!--header START-->
+										<header class="res-modal-edit-header" >
+											<div>
+												<span  style="color: #C9CFDD">ORGANIZATION: 
+													<span style="font-weight: bold;">{{userOrgCollection.userOrgList[currentOrganizationEditMenuOpen.orgIndex].orgName}} </span>
+													>Edit
+												</span>
+											</div>
+											<div>
+												<a 	style="cursor: pointer;" 
+													ng-click="organizationEditMenuClose()" 
+													directive-slide-hide-org
+													directive-blind-close-org >
+													<img class="close-btn" src="img/modal-menu/close-t.png" alt="close" width="24px" height="25px">
+												</a>
+											</div>
+										</header>
+										<!--header END-->
+										
+										<!--body START-->
+										<div class="res-modal-edit-body">
+											<div class="res-modal-edit-body-header">
+												<div>
+													<div class="res-modal-edit-body-header-name">
+														<span style="">
+															{{userOrgCollection.userOrgList[currentOrganizationEditMenuOpen.orgIndex].orgName}}
+														</span>
+													</div>
+													<div class="res-modal-edit-body-header-rename-btn">
+														<button class="modal-menu-btn" directive-blind-show-org >rename</button>
+													</div>
+												</div>
+												<hr>
+												<!--!-->
+												<section  class="res-modal-edit-body-header-remame-form blind-show-org" hidden="hidden" >
+
+													<span for="groupRenameInput">Enter new organization name</span>
+													<input 
+													type="text" 
+													class="res-remane-input"
+													id="groupRenameInput" 
+													placeholder="{{userOrgCollection.userOrgList[currentOrganizationEditMenuOpen.orgIndex].orgName}}" 
+													ng-model="groupRenameInput"
+													ng-minlength="2"
+													ng-maxlength="17"
+
+													>
+
+													<a ng-click="applyOrgEditNewName()" style="cursor: pointer;">
+														<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+													</a>
+
+													<div class="res-modal-edit-body-header-back">
+														<a directive-blind-show-org > back </a>
+													</div>
+												</section>
+											</div><!--modal-body-header end-->
+
+											<!-- organization-modal-EDIT-ROLE-block START -->
+											<div class=" res-modal-edit-type-block" >
+												
+												<div class="res-modal-edit-type-block-top">
+													<div class="res-modal-edit-block-top-name">
+														<span>Membership</span>
+													</div>
+													
+													<div class="res-modal-unit-edit" style="position: relative;top: -7px;">
+														<button directive-blind-mem-show >edit</button>
+													</div>
+												</div>
+												<!--!-->
+												<section class="res-modal-edit-type-block-bottom blind-show-mem" hidden="hidden">
+													
+													<!--ORG ROLES CHNGE SUB-MENU START-->
+													<div class="res-edit-category">
+
+														<!--MAIN USER role edit block in org-edit-menu START -->
+														<div class="org-modal-edit-body-header">
+															<div>
+																<div class="org-modal-edit-body-header-name">
+																	<span style="">{{user.userName}}, </span>
+
+																	<span title="{{userOrgCollection.userOrgList[currentOrganizationEditMenuOpen.orgIndex].orgRole}}" style="font-size: 110%;">
+																		{{userOrgCollection.userOrgList[currentOrganizationEditMenuOpen.orgIndex].orgRole}}
+																	</span> 
+																</div>
+																<div class="org-modal-edit-body-header-role-btn">
+																	<button class="modal-menu-btn" ng-click="roleBtnTrigger=!roleBtnTrigger">role</button>
+																</div>
+															</div>
+															
+															<hr class="hr-org-role-edit">
+															<!--!-->
+															<div  class="org-modal-edit-body-header-role-form" ng-show="roleBtnTrigger" >
+																<ul ng-repeat="role in userOrgCollection.userOrgRolesCollection" class="role-chbx-div">
+																	<li>
+																		<input 
+																		type="radio" 
+																		id="role{{$index}}"
+																		class="checkbox"
+																		name="roleUser"
+																		ng-checked="(userOrgCollection.userOrgList[currentOrganizationEditMenuOpen.orgIndex].orgRole == role)? true:false"
+																		value="{{role}}"
+																		ng-model="$parent.userSelectedRole"
+																		/>
+																		<label for="role{{$index}}"><span title="{{role}}">{{role}}</span></label>
+																	</li>
+																</ul>
+
+																<div class="org-modal-edit-body-header-back">
+																	<a ng-click="roleBtnTrigger=false" > back </a>
+																	
+																	<a ng-click="userOrgEditRoleChange(userSelectedRole)" style="cursor: pointer; float: right;">
+																		<img class="confirm-btn" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+																	</a> 
+																</div>
+															</div>
+														</div>
+														<!--MAIN USER role edit block in org-edit-menu END -->
+
+
+														<!--RESOURCE role edit block in org-edit-menu START -->
+														<div class="org-modal-edit-body-header" ng-repeat="resource in userResourceCollection">
+															<div>
+																<div class="org-modal-edit-body-header-name">
+																	<span style="">{{resource.resName}}, </span>
+
+																	<span title="{{resource.resOrg[currentOrganizationEditMenuOpen.orgIndex].orgRole}}" style="font-size: 110%;">
+																		{{resource.resOrg[currentOrganizationEditMenuOpen.orgIndex].orgRole}}
+																	</span> 
+																</div>
+																<div class="org-modal-edit-body-header-role-btn">
+																	<button class="modal-menu-btn" ng-click="resRoleBtnTrigger$index=!resRoleBtnTrigger$index">role</button>
+																</div>
+															</div>
+															
+															<hr class="hr-org-role-edit">
+															<!--!-->
+															<div  class="org-modal-edit-body-header-role-form" ng-show="resRoleBtnTrigger$index" >
+																<ul ng-repeat="role in userOrgCollection.userOrgRolesCollection" class="role-chbx-div">
+																	<li>
+																		<input 
+																		type="radio" 
+																		id="roleres{{$index}}{{resource.resId}}"
+																		class="checkbox"
+																		name="roleRes{{resource.resId}}"
+																		ng-checked="(resource.resOrg[currentOrganizationEditMenuOpen.orgIndex].orgRole == role)? true : false"
+																		value="{{role}}"
+																		ng-model="$parent.resSelectedRole"
+																		/>
+																		<label for="roleres{{$index}}{{resource.resId}}"><span title="{{role}}">{{role}}</span></label>
+																	</li>
+																</ul>
+
+																<div class="org-modal-edit-body-header-back">
+																	<a ng-click="resRoleBtnTrigger$index=false" > back </a>
+																	
+																	<a ng-click="resOrgEditRoleChange(resSelectedRole, $index)"  style="cursor: pointer; float: right;">
+																		<img class="confirm-btn" ng-click="resRoleBtnTrigger$index=false" src="img/modal-menu/ok-t.png" alt="ok" width="30px">
+																	</a> 
+																</div>
+															</div>
+														</div>
+														<!--RESOURCE role edit block in org-edit-menu END -->
+
+
+														<div class="org-modal-edit-body-header-back" width="300px">
+															<a directive-blind-mem-show > back </a>
+															<a></a>
+														</div>
+													</div>
+													<!--ORG ROLES CHNGE SUB-MENU END-->
+												</section>	
+											</div>
+											<!-- organization-modal-EDIT-ROLE-block END -->
+										</div><!-- res modal edit body END -->
+										<!--body END-->
+									</section>
+									<!--ORGANIZATIONS MODAL MENU EDIT SECTION END-->
+								</div>
+
+							</div>
+						</div>
+					</div>				
+				</section>
+				<!--ORGANIZATIONS MODAL SECTION END-->	
+
+			</section>
+			<!--MODAL MENU's SECTION END-->	
+
+
+		</div><!--container-main END-->
+	</div><!--container-general END-->
+
+
+	<script> 
+		var timerEndHtml = Date.now();
+		var totalTimeHtml = timerEndHtml - timerStart;
+
+		console.info('1) HTML loaded in ' + totalTimeHtml + 'ms');
+	</script>
+</body>
+
+</html>
